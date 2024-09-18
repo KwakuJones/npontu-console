@@ -1,0 +1,31 @@
+---
+- name: Creating and inserting data into custom database
+  hosts: testNode
+  remote_user: ubuntu
+  become: True
+  gather_facts: false
+
+  vars_files:
+    - dbVars.yml
+
+
+  tasks:
+    - name: Create DB
+      mysql_db:
+        name: movies
+        state: present
+        login_user: root
+        login_password: '{{rootPass}}'
+
+    - name: copy sql file onto host server 
+      copy:
+        src: testDB-data.sql
+        dest: /tmp/testDB-data.sql
+
+    - name: insert data into movies database
+      mysql_db:
+        name: movies
+        state: import
+        target: /tmp/testDB-data.sql
+        login_user: root
+        login_password: "{{rootPass}}"

@@ -1,0 +1,16 @@
+---
+- name: Placing an expiration date on password of user
+  hosts: ansibleNode
+  remote_user: ec2-user
+  gather_facts: false
+  become: true
+
+  vars_files:
+    - samplevars.yml
+
+  tasks:
+    - name: setting expiration date on password
+      shell:
+        cmd: sudo chage -M {{days}} {{username}}
+        
+  

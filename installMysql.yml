@@ -1,0 +1,68 @@
+---
+- name: Installation of Mysql
+  hosts: testNode
+  remote_user: ubuntu
+  become: True
+  gather_facts: true
+
+  vars_files:
+    - dbVars.yml
+
+  tasks:
+    - name: Full installation of python
+      apt:
+        name:
+          - python3
+        state: present
+
+    - name: Install Mysql dependencies
+      become: True
+      apt:
+        name:
+          - mysql-server
+        state: present
+
+    - name: Start MySql service
+      service:
+        name: mysql
+        state: started
+        enabled: true
+      notify: restart mysql
+
+    - name: Setup admin user
+      mysql_user:
+        name: root
+        password: "{{root-pass}}"
+        check_implicit_admin: true
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Create testDB database
+      mysql_db:
+        name: testDB
+        state: present
+        login_user: root
+        login_password: "{{root-pass}}"
+         
+    - name: Import data into database
+      mysql_db:
+        login_user: root
+        login_password: "{{root-pass}}" 
+        name: testDB
+        state: import
+        target: /home/ubuntu/npontu-console/testDB-data.sql
+
+    - name: Creating a new user
+      mysql_user:
+        name: eve
+        host: testNode
+        password: "{{user-pass}}"
+        login_user: root
+        login_password: "{{root-pass}}"
+        priv: "testDB.*: SELECT,GRANT"
+        update_password: on_create 
+  
+  handlers:
+    - name: restart mysql
+      service:
+        name: mysql
+        state: restarted  

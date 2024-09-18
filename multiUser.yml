@@ -1,0 +1,25 @@
+---
+- name: Trying to creat other users using a different user account
+  hosts: ansibleNode
+  remote_user: ec2-user
+  gather_facts: true
+  become: true
+
+  vars_files:
+    - samplevars.yml
+
+  tasks:
+    - name: creating user 
+      user:
+       name: "{{username}}"
+       password: "{{ password | password_hash('sha512','mysecretsalt')}}"
+       groups:
+          - wheel
+          - adm
+       state: "present"
+       shell: "/bin/bash"
+       system: false
+       create_home: true
+       home: "/home/{{username}}"
+       comment: 'Welcome {{username}}'
+       generate_ssh_key: true 

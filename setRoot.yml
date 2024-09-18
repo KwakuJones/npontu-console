@@ -1,0 +1,15 @@
+- name: Setting up root pass
+  hosts: testNode
+  remote_user: ubuntu
+  become: false
+  gather_facts: false
+
+  vars_files:
+    - dbVars.yml
+
+  tasks:
+    - name: setting a password
+      shell: mysqladmin -u root password "{{root-pass}}"
+      notify:
+        - restart mysql
+

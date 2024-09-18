@@ -1,0 +1,67 @@
+---
+- name: Installing MySql on Ubuntu
+  hosts: testNode
+  remote_user: ubuntu
+  become: true
+  gather_facts: true
+
+
+  vars_files:
+    - dbVars.yml
+
+  tasks:
+    - name: Update Apt package
+      apt:
+        update_cache: True
+
+    - name: Install Mysql Server
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Install Mysql Client
+      apt:
+        name: mysql-client
+        state: present
+
+    - name: Checking MySql is running
+      service:
+        name: mysql
+        state: started
+        enabled: True
+
+    - name: Install needed python library
+      apt:
+        name: python3-pymysql
+        state: present
+
+    - name: Change authentication plugin of MySql root user
+      shell: mysql -u root -e 'UPDATE mysql.user SET plugin ="mysql_native_password" WHERE user="root" AND host="localhost"'
+    
+    - name: Flush Privileges
+      shell: mysql -u root -e 'FLUSH PRIVILEGES'
+
+
+    - name: Set root admin password
+      mysql_user:
+        login_host: 'localhost'
+        login_user: 'root'
+        login_password: ''
+        name: root
+        password: '{{rootPass}}'
+        state: present
+
+    
+    - name: Create super user
+      mysql_user:
+        login_host: 'localhost'
+        login_user: 'root'
+        login_password: '{{rootPass}}'
+        name: adam
+        password: '{{userPass}}'
+        priv: "*.*:ALL,GRANT"
+        state: present
+
+
+  
+

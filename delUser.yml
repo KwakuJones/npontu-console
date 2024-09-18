@@ -1,0 +1,19 @@
+---
+- name: Delete a user 
+  hosts: ansibleNode
+  remote_user: ec2-user
+  become: true
+  gather_facts: false
+
+  vars_files:
+    - samplevars.yml
+ 
+  tasks:
+    - name: Deleting a user
+      user:
+        name: "{{username}}"
+        state: absent
+        remove: true
+
+    - debug: msg="{{username}} has been deleted"
+      
